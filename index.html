@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Safe Space for Fatima</title>
+    <style>
+        /* --- CSS VARIABLES & THEMING --- */
+        :root {
+            /* Light Mode (Default) */
+            --bg-color: #f7dab2;
+            --text-color: #6a635b;
+            --glow-color-start: rgba(255, 192, 203, 0.5);
+            --glow-color-end: rgba(255, 255, 255, 0);
+            --special-heart-color: #ff91a4;
+            --accent-color: #ffb6c1;
+            --accent-hover-color: #ffaab5;
+            --border-color: rgba(0, 0, 0, 0.07);
+            --card-bg-color: rgba(255, 255, 255, 0.8);
+            --shadow-color: rgba(181, 163, 149, 0.15);
+            --modal-bg: rgba(0, 0, 0, 0.2);
+            --heart-gradient-start: #ffb6c1;
+            --heart-gradient-end: #ff91a4;
+            --transition-speed: 0.5s;
+        }
+
+        body.night-mode {
+            --bg-color: #2c2c3d;
+            --text-color: #dcdcdc;
+            --glow-color-start: rgba(74, 47, 86, 0.4);
+            --glow-color-end: rgba(44, 44, 61, 0.0);
+            --accent-color: #8c73a1;
+            --accent-hover-color: #9f86b3;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --card-bg-color: rgba(60, 60, 80, 0.5);
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --heart-gradient-start: #8c73a1;
+            --heart-gradient-end: #6a5381;
+        }
+
+        /* --- BASE STYLES --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            transition: background-color var(--transition-speed), color var(--transition-speed);
+        }
+
+        .d-none { display: none !important; }
+
+        /* --- BACKGROUND ELEMENTS --- */
+        #glow-bg {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 150vmax;
+            height: 150vmax;
+            background: radial-gradient(circle, var(--glow-color-start) 0%, var(--glow-color-end) 70%);
+            z-index: -2;
+            pointer-events: none;
+            transition: background var(--transition-speed);
+        }
+
+        .heart {
+            position: fixed;
+            z-index: -1;
+            pointer-events: none;
+            fill: var(--heart-gradient-start);
+            filter: drop-shadow(0 2px 4px var(--shadow-color));
+            animation: pulse infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1) rotate(var(--rot)); opacity: var(--op); }
+            50% { transform: scale(1.15) rotate(var(--rot)); opacity: 1; }
+            100% { transform: scale(1) rotate(var(--rot)); opacity: var(--op); }
+        }
+
+        /* --- UI COMPONENTS --- */
+        h1, h2 {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 10px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            text-align: center;
+            z-index: 1;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .card {
+            background: var(--card-bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: 0 4px 15px var(--shadow-color);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s, background-color 0.3s, box-shadow 0.3s;
+            margin-bottom: 20px;
+        }
+
+        button, input, select, textarea {
+            background: var(--card-bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 25px;
+            padding: 12px 25px;
+            color: var(--text-color);
+            outline: none;
+            transition: all 0.3s;
+            margin: 5px;
+            font-size: 1rem;
+        }
+
+        button { cursor: pointer; }
+        button:hover {
+            transform: translateY(-2px);
+            background-color: var(--accent-color);
+            box-shadow: 0 6px 12px var(--shadow-color);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px var(--glow-color-start);
+        }
+
+        /* --- NAVIGATION --- */
+        .grid-view {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .item-card {
+            cursor: pointer;
+            padding: 40px 20px;
+            font-weight: bold;
+        }
+
+        .item-card:hover {
+            background-color: var(--accent-color);
+        }
+
+        /* --- MODALS --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--modal-bg);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            animation: fadeIn 0.3s forwards;
+        }
+
+        .modal-content {
+            background: var(--card-bg-color);
+            padding: 40px;
+            border-radius: 30px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        /* --- SPECIAL BUTTONS --- */
+        #special-heart {
+            position: fixed;
+            top: 20px; right: 20px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--special-heart-color);
+            z-index: 10;
+            transition: transform 0.3s;
+        }
+        #special-heart:hover { transform: scale(1.2); }
+
+        #night-mode-toggle {
+            position: fixed;
+            bottom: 20px; right: 20px;
+            border-radius: 50%;
+            width: 50px; height: 50px;
+            padding: 0;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        #hidden-message-trigger {
+            position: fixed;
+            bottom: 20px; left: 20px;
+            font-size: 0.8rem;
+            opacity: 0.5;
+            cursor: pointer;
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-out { animation: fadeOut 0.5s forwards; }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+
+        /* --- ADMIN PANEL SPECIFICS --- */
+        .admin-section { margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+        .admin-list { text-align: left; max-height: 300px; overflow-y: auto; margin-top: 10px; }
+        .admin-list-item { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; font-size: 0.9rem; }
+        .delete-btn { background: transparent; color: #ff6b6b; border: none; padding: 2px 10px; }
+        .delete-btn:hover { background: #ff6b6b; color: white; transform: none; }
+        .edit-btn { background: transparent; color: #4a90e2; border: none; padding: 2px 10px; cursor: pointer; }
+        .edit-btn:hover { background: #4a90e2; color: white; transform: none; border-radius: 15px; }
+
+    </style>
+</head>
+<body>
+
+    <div id="glow-bg"></div>
+    <div id="hearts-container"></div>
+
+    <div id="special-heart" title="Admin Panel">🌸</div>
+
+    <!-- 1. Exposure Choice Screen -->
+    <div id="exposure-screen" class="container">
+        <div class="card">
+            <h2>Whats your mood Right now?</h2>
+            <p style="margin-bottom: 25px;">How much do you want to see meri jaan? In case you're feeling overstimulated or Numb, Anything</p>
+            <button class="exposure-btn" data-exposure="full">Everything</button>
+            <button class="exposure-btn" data-exposure="limited">Just a little</button>
+        </div>
+    </div>
+
+    <!-- 3. Books View -->
+    <div id="books-view" class="container d-none">
+        <h2>Your Library</h2>
+        <div id="random-comfort-container">
+            <button id="random-comfort-btn">✨ Random Comfort</button>
+        </div>
+        <div id="books-grid" class="grid-view"></div>
+    </div>
+
+    <!-- 4. Sub-Books View -->
+    <div id="sub-books-view" class="container d-none">
+        <button class="back-btn" data-to="books-view">← Back to Library</button>
+        <h2 id="current-book-name"></h2>
+        <div id="sub-books-grid" class="grid-view"></div>
+    </div>
+
+    <!-- 5. Pages View -->
+    <div id="pages-view" class="container d-none">
+        <button class="back-btn" data-to="sub-books-view">← Back</button>
+        <h2 id="current-sub-book-name"></h2>
+        <div id="pages-list"></div>
+    </div>
+
+    <!-- 6. Single Page View (Random Comfort) -->
+    <div id="single-page-view" class="container d-none">
+        <button class="back-btn" data-to="books-view">← Back</button>
+        <div class="card" style="margin-top: 20px;">
+            <p id="page-context" style="font-size: 0.8rem; opacity: 0.7; margin-bottom: 10px;"></p>
+            <h2 id="single-page-title"></h2>
+            <div id="single-page-content" style="text-align: left; line-height: 1.6; white-space: pre-wrap;"></div>
+        </div>
+    </div>
+
+    <!-- 7. Admin Login Modal -->
+    <div id="admin-login-modal" class="modal-overlay d-none">
+        <div class="modal-content">
+            <h3>Admin Access</h3>
+            <input type="password" id="admin-password" placeholder="Admin Password...">
+            <br>
+            <button id="submit-admin-login">Login</button>
+            <button class="close-modal">Close</button>
+        </div>
+    </div>
+
+    <!-- 8. Admin Panel Modal -->
+    <div id="admin-panel-modal" class="modal-overlay d-none">
+        <div class="modal-content" style="max-width: 600px; max-height: 90vh; overflow-y: auto;">
+            <h3>Admin Panel</h3>
+            <hr style="margin: 15px 0;">
+            
+            <div class="admin-section">
+                <h4>Create Book</h4>
+                <input type="text" id="new-book-name" placeholder="Book Name">
+                <button id="create-book-btn">Create</button>
+            </div>
+
+            <div class="admin-section">
+                <h4>Create Sub-Book</h4>
+                <select id="parent-book-select"></select>
+                <input type="text" id="new-sub-book-name" placeholder="Sub-Book Name">
+                <button id="create-sub-book-btn">Create</button>
+            </div>
+
+            <div class="admin-section" id="admin-page-section">
+                <h4 id="admin-page-header">Add Page</h4>
+                <div id="admin-page-selectors">
+                    <select id="admin-book-select"></select>
+                    <select id="admin-sub-book-select"></select>
+                </div>
+                
+                <div id="admin-type-container" style="margin: 10px 0; text-align: left;">
+                    <label style="font-size: 0.9rem; opacity: 0.8;">Content Type:</label>
+                    <select id="new-page-type" style="width: 100%; margin-top: 5px;">
+                        <option value="text">Written Note (Text)</option>
+                        <option value="image">Memory (Photo)</option>
+                    </select>
+                </div>
+
+                <input type="text" id="new-page-title" placeholder="Title/Caption" style="width: 100%;">
+                
+                <!-- Text input -->
+                <textarea id="new-page-content" placeholder="Write something..." style="width: 100%; min-height: 100px; border-radius: 15px;"></textarea>
+                
+                <!-- Image input -->
+                <div id="image-input-container" class="d-none" style="margin: 10px 0; text-align: left;">
+                    <label style="font-size: 0.9rem; opacity: 0.8;">Choose Photo:</label>
+                    <input type="file" id="new-page-image" accept="image/*" style="width: 100%; border-radius: 15px; padding: 10px; background: rgba(255,255,255,0.3);">
+                    <p style="font-size: 0.7rem; opacity: 0.6; margin-top: 5px;">Note: Try to use smaller images to keep the site fast.</p>
+                </div>
+
+                <div style="margin: 10px 0;">
+                    <label><input type="radio" name="exposure" value="full" checked> Full Exposure</label>
+                    <label style="margin-left: 15px;"><input type="radio" name="exposure" value="limited"> Limited</label>
+                </div>
+                <button id="create-page-btn">Add Page</button>
+                <button id="cancel-edit-btn" class="d-none">Cancel Edit</button>
+            </div>
+
+            <div class="admin-section">
+                <h4>Manage Content</h4>
+                <div id="admin-content-manager" class="admin-list"></div>
+            </div>
+
+            <button class="close-modal">Close</button>
+        </div>
+    </div>
+
+    <div id="hidden-message-trigger" class="d-none">Whats this? (click :))</div>
+    <button id="night-mode-toggle">🌙</button>
+
+    <script>
+        /* --- STATE MANAGEMENT --- */
+        let savedData = [];
+        try {
+            const localData = localStorage.getItem('fatimaWebsiteData');
+            if (localData) savedData = JSON.parse(localData);
+        } catch (e) { console.error("Data error", e); }
+
+        const state = {
+            books: Array.isArray(savedData) ? savedData : [],
+            exposureLevel: 'limited',
+            currentView: 'exposure-screen',
+            activeBook: null,
+            activeSubBook: null,
+            isNightMode: localStorage.getItem('nightMode') === 'true',
+            editingPage: null // { bookId, subBookId, pageId }
+        };
+
+        const PASSWORDS = ['ILoveYouFatima', 'come@myhous'];
+
+        /* --- INITIALIZATION --- */
+        function init() {
+            // 1. Attach Event Listeners First (Resilience)
+            bindEvents();
+            
+            // 2. Initial Decorations & Theme
+            createHearts();
+            applyNightMode();
+            
+            // 3. Initial Rendering
+            renderAdminSelects();
+        }
+
+        function bindEvents() {
+            const safeBind = (id, event, fn) => {
+                const el = document.getElementById(id);
+                if (el) el[event] = fn;
+            };
+
+            // Exposure Buttons
+            document.querySelectorAll('.exposure-btn').forEach(btn => {
+                btn.onclick = (e) => handleExposureChoice(e.currentTarget.dataset.exposure);
+            });
+
+            // Navigation
+            safeBind('special-heart', 'onclick', () => showView('admin-login-modal', true));
+            safeBind('submit-admin-login', 'onclick', handleAdminLogin);
+            safeBind('night-mode-toggle', 'onclick', toggleNightMode);
+            safeBind('hidden-message-trigger', 'onclick', () => alert("Yay you found this! My smart baby~"));
+            safeBind('random-comfort-btn', 'onclick', showRandomComfort);
+
+            document.querySelectorAll('.close-modal').forEach(btn => btn.onclick = closeModal);
+            document.querySelectorAll('.back-btn').forEach(btn => {
+                btn.onclick = () => showView(btn.dataset.to);
+            });
+
+            // Admin Actions
+            safeBind('create-book-btn', 'onclick', createBook);
+            safeBind('create-sub-book-btn', 'onclick', createSubBook);
+            safeBind('create-page-btn', 'onclick', createPage);
+            safeBind('cancel-edit-btn', 'onclick', cancelEdit);
+            safeBind('admin-book-select', 'onchange', (e) => updateAdminSubBookSelect(e.target.value));
+
+            // Handle Type Selection
+            const typeSelect = document.getElementById('new-page-type');
+            if (typeSelect) {
+                typeSelect.onchange = (e) => {
+                    const type = e.target.value;
+                    const textEl = document.getElementById('new-page-content');
+                    const imgEl = document.getElementById('image-input-container');
+                    if (type === 'image') {
+                        if (textEl) textEl.classList.add('d-none');
+                        if (imgEl) imgEl.classList.remove('d-none');
+                    } else {
+                        if (textEl) textEl.classList.remove('d-none');
+                        if (imgEl) imgEl.classList.add('d-none');
+                    }
+                };
+            }
+
+            // Modal Protection
+            document.querySelectorAll('.modal-content').forEach(c => c.onclick = (e) => e.stopPropagation());
+        }
+
+        /* --- NAVIGATION & VIEWS --- */
+        function showView(viewId, isModal = false) {
+            if (isModal) {
+                const modal = document.getElementById(viewId);
+                if (modal) modal.classList.remove('d-none');
+                return;
+            }
+
+            document.querySelectorAll('.container').forEach(v => v.classList.add('d-none'));
+            const target = document.getElementById(viewId);
+            if (target) {
+                target.classList.remove('d-none');
+                state.currentView = viewId;
+                if (viewId === 'books-view') renderBooks();
+                if (viewId === 'sub-books-view') renderSubBooks();
+                if (viewId === 'pages-view') renderPages();
+            }
+        }
+
+        function closeModal() {
+            document.querySelectorAll('.modal-overlay').forEach(m => m.classList.add('d-none'));
+            if (state.editingPage) cancelEdit();
+        }
+
+        /* --- AUTHENTICATION --- */
+        function handleExposureChoice(level) {
+            state.exposureLevel = level;
+            const secret = document.getElementById('hidden-message-trigger');
+            if (secret) secret.classList.remove('d-none');
+            showView('books-view');
+        }
+
+        function handleAdminLogin() {
+            const input = document.getElementById('admin-password');
+            const val = input ? input.value : '';
+            if (PASSWORDS.includes(val)) {
+                closeModal();
+                showView('admin-panel-modal', true);
+                renderAdminManager();
+            } else {
+                alert("Incorrect Admin Password");
+            }
+            if (input) input.value = '';
+        }
+
+        /* --- RENDERING LOGIC --- */
+        function renderBooks() {
+            const grid = document.getElementById('books-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            
+            const visibleBooks = state.books.filter(book => 
+                book.subBooks.some(sb => sb.pages.some(p => state.exposureLevel === 'full' || p.exposure === 'limited'))
+            );
+
+            if (visibleBooks.length === 0) {
+                grid.innerHTML = '<p style="grid-column: 1/-1; opacity: 0.6;">Nothing to see here yet... Add some content in the Admin Panel (🌸 top-right).</p>';
+                return;
+            }
+
+            visibleBooks.forEach(book => {
+                const card = document.createElement('div');
+                card.className = 'card item-card';
+                card.innerText = book.name;
+                card.onclick = () => {
+                    state.activeBook = book;
+                    showView('sub-books-view');
+                };
+                grid.appendChild(card);
+            });
+        }
+
+        function renderSubBooks() {
+            const grid = document.getElementById('sub-books-grid');
+            const title = document.getElementById('current-book-name');
+            if (!grid || !state.activeBook) return;
+            grid.innerHTML = '';
+            title.innerText = state.activeBook.name;
+
+            const visibleSubBooks = state.activeBook.subBooks.filter(sb => 
+                sb.pages.some(p => state.exposureLevel === 'full' || p.exposure === 'limited')
+            );
+
+            visibleSubBooks.forEach(sb => {
+                const card = document.createElement('div');
+                card.className = 'card item-card';
+                card.innerText = sb.name;
+                card.onclick = () => {
+                    state.activeSubBook = sb;
+                    showView('pages-view');
+                };
+                grid.appendChild(card);
+            });
+        }
+
+        function renderPages() {
+            const list = document.getElementById('pages-list');
+            const title = document.getElementById('current-sub-book-name');
+            if (!list || !state.activeSubBook) return;
+            list.innerHTML = '';
+            title.innerText = state.activeSubBook.name;
+
+            const visiblePages = state.activeSubBook.pages.filter(p => 
+                state.exposureLevel === 'full' || p.exposure === 'limited'
+            );
+
+            visiblePages.forEach(page => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.style.textAlign = 'left';
+                
+                let contentHTML = '';
+                if (page.type === 'image') {
+                    contentHTML = `<img src="${page.content}" style="width: 100%; border-radius: 15px; margin-top: 10px; box-shadow: 0 4px 10px var(--shadow-color);">`;
+                } else {
+                    contentHTML = `<div style="line-height: 1.6; white-space: pre-wrap;">${page.content}</div>`;
+                }
+
+                card.innerHTML = `
+                    <h3 style="margin-bottom: 10px;">${page.title}</h3>
+                    ${contentHTML}
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function showRandomComfort() {
+            const allVisiblePages = [];
+            state.books.forEach(b => {
+                b.subBooks.forEach(sb => {
+                    sb.pages.forEach(p => {
+                        if (state.exposureLevel === 'full' || p.exposure === 'limited') {
+                            allVisiblePages.push({ page: p, book: b, subBook: sb });
+                        }
+                    });
+                });
+            });
+
+            if (allVisiblePages.length === 0) return alert("No comfort pages found yet.");
+
+            const rand = allVisiblePages[Math.floor(Math.random() * allVisiblePages.length)];
+            const ctx = document.getElementById('page-context');
+            const title = document.getElementById('single-page-title');
+            const content = document.getElementById('single-page-content');
+            
+            if (ctx) ctx.innerText = `From: ${rand.book.name} > ${rand.subBook.name}`;
+            if (title) title.innerText = rand.page.title;
+            
+            if (content) {
+                if (rand.page.type === 'image') {
+                    content.innerHTML = `<img src="${rand.page.content}" style="width: 100%; border-radius: 15px; box-shadow: 0 4px 10px var(--shadow-color);">`;
+                } else {
+                    content.innerText = rand.page.content;
+                }
+            }
+            showView('single-page-view');
+        }
+
+        /* --- ADMIN OPERATIONS --- */
+        function saveData() {
+            localStorage.setItem('fatimaWebsiteData', JSON.stringify(state.books));
+            renderAdminSelects();
+            renderAdminManager();
+            // If current view is rendering data, refresh it
+            if (state.currentView === 'books-view') renderBooks();
+            if (state.currentView === 'sub-books-view') renderSubBooks();
+            if (state.currentView === 'pages-view') renderPages();
+        }
+
+        function createBook() {
+            const input = document.getElementById('new-book-name');
+            const name = input ? input.value.trim() : '';
+            if (!name) return;
+            state.books.push({ id: Date.now(), name, subBooks: [] });
+            if (input) input.value = '';
+            saveData();
+        }
+
+        function createSubBook() {
+            const bookSelect = document.getElementById('parent-book-select');
+            const nameInput = document.getElementById('new-sub-book-name');
+            const bookId = bookSelect ? parseInt(bookSelect.value) : null;
+            const name = nameInput ? nameInput.value.trim() : '';
+            const book = state.books.find(b => b.id === bookId);
+            if (!book || !name) return;
+            book.subBooks.push({ id: Date.now(), name, pages: [] });
+            if (nameInput) nameInput.value = '';
+            saveData();
+        }
+
+        function createPage() {
+            const bSelect = document.getElementById('admin-book-select');
+            const sbSelect = document.getElementById('admin-sub-book-select');
+            const typeSelect = document.getElementById('new-page-type');
+            const tInput = document.getElementById('new-page-title');
+            const cInput = document.getElementById('new-page-content');
+            const iInput = document.getElementById('new-page-image');
+            const expInput = document.querySelector('input[name="exposure"]:checked');
+
+            const bookId = bSelect ? parseInt(bSelect.value) : null;
+            const subBookId = sbSelect ? parseInt(sbSelect.value) : null;
+            const type = typeSelect ? typeSelect.value : 'text';
+            const title = tInput ? tInput.value.trim() : '';
+            const exposure = expInput ? expInput.value : 'full';
+
+            const finishCreate = (content) => {
+                if (state.editingPage) {
+                    const book = state.books.find(b => b.id === state.editingPage.bookId);
+                    const subBook = book ? book.subBooks.find(sb => sb.id === state.editingPage.subBookId) : null;
+                    const page = subBook ? subBook.pages.find(p => p.id === state.editingPage.pageId) : null;
+                    if (page) {
+                        page.title = title;
+                        page.content = content;
+                        page.exposure = exposure;
+                        // type shouldn't change for edit to be safe
+                    }
+                    state.editingPage = null;
+                    resetPageForm();
+                } else {
+                    const book = state.books.find(b => b.id === bookId);
+                    const subBook = book ? book.subBooks.find(sb => sb.id === subBookId) : null;
+                    if (!subBook) return;
+                    subBook.pages.push({ id: Date.now(), type, title, content, exposure });
+                }
+                
+                resetPageForm();
+                saveData();
+            };
+
+            if (!title) return alert("Please enter a title.");
+
+            if (type === 'image' && !state.editingPage) {
+                const file = iInput ? iInput.files[0] : null;
+                if (!file) return alert("Please select a photo.");
+                const reader = new FileReader();
+                reader.onload = (e) => finishCreate(e.target.result);
+                reader.readAsDataURL(file);
+            } else if (type === 'text') {
+                const content = cInput ? cInput.value.trim() : '';
+                if (!content) return alert("Please write some content.");
+                finishCreate(content);
+            } else if (state.editingPage && type === 'image') {
+                // Editing an image page, but not changing the image
+                const book = state.books.find(b => b.id === state.editingPage.bookId);
+                const subBook = book ? book.subBooks.find(sb => sb.id === state.editingPage.subBookId) : null;
+                const page = subBook ? subBook.pages.find(p => p.id === state.editingPage.pageId) : null;
+                finishCreate(page.content);
+            }
+        }
+
+        function editPage(bookId, subBookId, pageId) {
+            const book = state.books.find(b => b.id === bookId);
+            const subBook = book ? book.subBooks.find(sb => sb.id === subBookId) : null;
+            const page = subBook ? subBook.pages.find(p => p.id === pageId) : null;
+            
+            if (!page) return;
+            if (page.type === 'image') return alert("Only text pages can be edited for now.");
+
+            state.editingPage = { bookId, subBookId, pageId };
+
+            // Fill form
+            document.getElementById('admin-page-header').innerText = "Edit Page";
+            document.getElementById('create-page-btn').innerText = "Save Changes";
+            document.getElementById('cancel-edit-btn').classList.remove('d-none');
+            document.getElementById('admin-page-selectors').classList.add('d-none');
+            document.getElementById('admin-type-container').classList.add('d-none');
+            
+            document.getElementById('new-page-title').value = page.title;
+            document.getElementById('new-page-content').value = page.content;
+            document.querySelector(`input[name="exposure"][value="${page.exposure}"]`).checked = true;
+            
+            // Focus
+            document.getElementById('new-page-title').focus();
+            document.getElementById('admin-page-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function cancelEdit() {
+            state.editingPage = null;
+            resetPageForm();
+        }
+
+        function resetPageForm() {
+            document.getElementById('admin-page-header').innerText = "Add Page";
+            document.getElementById('create-page-btn').innerText = "Add Page";
+            document.getElementById('cancel-edit-btn').classList.add('d-none');
+            document.getElementById('admin-page-selectors').classList.remove('d-none');
+            document.getElementById('admin-type-container').classList.remove('d-none');
+            
+            document.getElementById('new-page-title').value = '';
+            document.getElementById('new-page-content').value = '';
+            document.getElementById('new-page-image').value = '';
+            document.querySelector('input[name="exposure"][value="full"]').checked = true;
+        }
+
+        function deleteItem(type, id, parentId = null, grandParentId = null) {
+            if (!confirm(`Are you sure you want to delete this ${type}?`)) return;
+
+            if (type === 'book') {
+                state.books = state.books.filter(b => b.id !== id);
+            } else if (type === 'subBook') {
+                const book = state.books.find(b => b.id === parentId);
+                if (book) book.subBooks = book.subBooks.filter(sb => sb.id !== id);
+            } else if (type === 'page') {
+                const book = state.books.find(b => b.id === grandParentId);
+                const subBook = book ? book.subBooks.find(sb => sb.id === parentId) : null;
+                if (subBook) subBook.pages = subBook.pages.filter(p => p.id !== id);
+            }
+            saveData();
+        }
+
+        /* --- ADMIN UI HELPERS --- */
+        function renderAdminSelects() {
+            const bSelects = [document.getElementById('parent-book-select'), document.getElementById('admin-book-select')];
+            bSelects.forEach(s => {
+                if (s) s.innerHTML = state.books.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+            });
+            if (state.books.length > 0) updateAdminSubBookSelect(state.books[0].id);
+        }
+
+        function updateAdminSubBookSelect(bookId) {
+            const select = document.getElementById('admin-sub-book-select');
+            if (!select) return;
+            const book = state.books.find(b => b.id === parseInt(bookId));
+            select.innerHTML = book ? book.subBooks.map(sb => `<option value="${sb.id}">${sb.name}</option>`).join('') : '';
+        }
+
+        function renderAdminManager() {
+            const container = document.getElementById('admin-content-manager');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            state.books.forEach(b => {
+                const bDiv = document.createElement('div');
+                bDiv.className = 'admin-list-item';
+                bDiv.style.fontWeight = 'bold';
+                bDiv.innerHTML = `<span>📖 ${b.name}</span> <button class="delete-btn" onclick="deleteItem('book', ${b.id})">Delete</button>`;
+                container.appendChild(bDiv);
+
+                b.subBooks.forEach(sb => {
+                    const sbDiv = document.createElement('div');
+                    sbDiv.className = 'admin-list-item';
+                    sbDiv.style.paddingLeft = '20px';
+                    sbDiv.innerHTML = `<span>📁 ${sb.name}</span> <button class="delete-btn" onclick="deleteItem('subBook', ${sb.id}, ${b.id})">Delete</button>`;
+                    container.appendChild(sbDiv);
+
+                    sb.pages.forEach(p => {
+                        const pDiv = document.createElement('div');
+                        pDiv.className = 'admin-list-item';
+                        pDiv.style.paddingLeft = '40px';
+                        pDiv.style.fontSize = '0.8rem';
+                        const typeIcon = p.type === 'image' ? '📸' : '📄';
+                        const editBtn = p.type === 'text' ? `<button class="edit-btn" onclick="editPage(${b.id}, ${sb.id}, ${p.id})">Edit</button>` : '';
+                        pDiv.innerHTML = `
+                            <span>${typeIcon} ${p.title} (${p.exposure})</span> 
+                            <div>
+                                ${editBtn}
+                                <button class="delete-btn" onclick="deleteItem('page', ${p.id}, ${sb.id}, ${b.id})">Delete</button>
+                            </div>
+                        `;
+                        container.appendChild(pDiv);
+                    });
+                });
+            });
+        }
+
+        /* --- DECORATIONS & THEME --- */
+        function createHearts() {
+            const container = document.getElementById('hearts-container');
+            if (!container) return;
+            for (let i = 0; i < 25; i++) {
+                const heart = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                heart.setAttribute("viewBox", "0 0 32 32");
+                heart.classList.add('heart');
+                heart.innerHTML = `<path d="M16 28.5L14.1 26.6C7.3 20.4 3 16.5 3 11.5 3 7.4 6.2 4.2 10.3 4.2 12.6 4.2 14.8 5.3 16.2 7.1 17.6 5.3 19.8 4.2 22.1 4.2 26.2 4.2 29.4 7.4 29.4 11.5 29.4 16.5 25.1 20.4 18.3 26.6L16 28.5Z"/>`;
+                
+                const size = 15 + Math.random() * 20;
+                const duration = 4 + Math.random() * 5;
+                const delay = -Math.random() * 7;
+                const rot = -45 + Math.random() * 90;
+                const op = 0.2 + Math.random() * 0.5;
+
+                heart.style.width = `${size}px`;
+                heart.style.left = `${Math.random() * 100}vw`;
+                heart.style.top = `${Math.random() * 100}vh`;
+                heart.style.animationDuration = `${duration}s`;
+                heart.style.animationDelay = `${delay}s`;
+                heart.style.setProperty('--rot', `${rot}deg`);
+                heart.style.setProperty('--op', op);
+
+                container.appendChild(heart);
+            }
+        }
+
+        function toggleNightMode() {
+            state.isNightMode = !state.isNightMode;
+            localStorage.setItem('nightMode', state.isNightMode);
+            applyNightMode();
+        }
+
+        function applyNightMode() {
+            const toggle = document.getElementById('night-mode-toggle');
+            if (state.isNightMode) {
+                document.body.classList.add('night-mode');
+                if (toggle) toggle.innerText = '☀️';
+            } else {
+                document.body.classList.remove('night-mode');
+                if (toggle) toggle.innerText = '🌙';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
