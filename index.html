@@ -321,6 +321,7 @@
                     <select id="new-page-type" style="width: 100%; margin-top: 5px;">
                         <option value="text">Written Note (Text)</option>
                         <option value="image">Memory (Photo)</option>
+                        <option value="link">Link</option>
                     </select>
                 </div>
 
@@ -335,7 +336,11 @@
                     <input type="file" id="new-page-image" accept="image/*" style="width: 100%; border-radius: 15px; padding: 10px; background: rgba(255,255,255,0.3);">
                     <p style="font-size: 0.7rem; opacity: 0.6; margin-top: 5px;">Note: Try to use smaller images to keep the site fast.</p>
                 </div>
-
+                <!-- Link input -->
+                <div id="link-input-container" class="d-none" style="margin: 10px 0; text-align: left;">
+                    <label style="font-size: 0.9rem; opacity: 0.8;">Paste Link:</label>
+                    <input type="url" id="new-page-link" placeholder="https://example.com" style="width: 100%;">
+                </div>
                 <div style="margin: 10px 0;">
                     <label><input type="radio" name="exposure" value="full" checked> Full Exposure</label>
                     <label style="margin-left: 15px;"><input type="radio" name="exposure" value="limited"> Limited</label>
@@ -426,10 +431,17 @@
                     const type = e.target.value;
                     const textEl = document.getElementById('new-page-content');
                     const imgEl = document.getElementById('image-input-container');
+                    const linkEl = document.getElementById('link-input-container');
                     if (type === 'image') {
                         if (textEl) textEl.classList.add('d-none');
                         if (imgEl) imgEl.classList.remove('d-none');
-                    } else {
+                    } 
+                    else if (type === 'link') {
+                        if (textEl) textEl.classList.add('d-none');
+                        if (imgEl) imgEl.classList.add('d-none');
+                        if (linkEl) linkEl.classList.remove('d-none');
+
+                    else {
                         if (textEl) textEl.classList.remove('d-none');
                         if (imgEl) imgEl.classList.add('d-none');
                     }
@@ -554,7 +566,15 @@
                 let contentHTML = '';
                 if (page.type === 'image') {
                     contentHTML = `<img src="${page.content}" style="width: 100%; border-radius: 15px; margin-top: 10px; box-shadow: 0 4px 10px var(--shadow-color);">`;
-                } else {
+                } else if (rand.page.type === 'link') {
+                    content.innerHTML = `
+                        <a href="${rand.page.content}" target="_blank" 
+                           style="color: var(--accent-color); font-weight: bold;">
+                           🔗 Open Link
+                        </a>
+                    `;
+
+                else {
                     contentHTML = `<div style="line-height: 1.6; white-space: pre-wrap;">${page.content}</div>`;
                 }
 
@@ -677,6 +697,14 @@
                 const reader = new FileReader();
                 reader.onload = (e) => finishCreate(e.target.result);
                 reader.readAsDataURL(file);
+
+            ]else if (type === 'link') {
+                const linkInput = document.getElementById('new-page-link');
+                const link = linkInput ? linkInput.value.trim() : '';
+            
+                if (!link) return alert("Please enter a link.");
+            
+                finishCreate(link);
             } else if (type === 'text') {
                 const content = cInput ? cInput.value.trim() : '';
                 if (!content) return alert("Please write some content.");
