@@ -16,7 +16,7 @@
             --accent-color: #ffb6c1;
             --accent-hover-color: #ffaab5;
             --border-color: rgba(0, 0, 0, 0.07);
-            --card-bg-color: rgba(255, 255, 255, 0.8);
+            --card-bg-color: rgba(255, 94, 94, 0.8);
             --shadow-color: rgba(181, 163, 149, 0.15);
             --modal-bg: rgba(0, 0, 0, 0.2);
             --heart-gradient-start: #630000;
@@ -295,7 +295,7 @@
         <div class="modal-content" style="max-width: 600px; max-height: 90vh; overflow-y: auto;">
             <h3>Admin Panel</h3>
             <hr style="margin: 15px 0;">
-            
+
             <div class="admin-section">
                 <h4>Create Book</h4>
                 <input type="text" id="new-book-name" placeholder="Book Name">
@@ -315,7 +315,7 @@
                     <select id="admin-book-select"></select>
                     <select id="admin-sub-book-select"></select>
                 </div>
-                
+
                 <div id="admin-type-container" style="margin: 10px 0; text-align: left;">
                     <label style="font-size: 0.9rem; opacity: 0.8;">Content Type:</label>
                     <select id="new-page-type" style="width: 100%; margin-top: 5px;">
@@ -325,10 +325,10 @@
                 </div>
 
                 <input type="text" id="new-page-title" placeholder="Title/Caption" style="width: 100%;">
-                
+
                 <!-- Text input -->
                 <textarea id="new-page-content" placeholder="Write something..." style="width: 100%; min-height: 100px; border-radius: 15px;"></textarea>
-                
+
                 <!-- Image input -->
                 <div id="image-input-container" class="d-none" style="margin: 10px 0; text-align: left;">
                     <label style="font-size: 0.9rem; opacity: 0.8;">Choose Photo:</label>
@@ -380,11 +380,11 @@
         function init() {
             // 1. Attach Event Listeners First (Resilience)
             bindEvents();
-            
+
             // 2. Initial Decorations & Theme
             createHearts();
             applyNightMode();
-            
+
             // 3. Initial Rendering
             renderAdminSelects();
         }
@@ -490,8 +490,8 @@
             const grid = document.getElementById('books-grid');
             if (!grid) return;
             grid.innerHTML = '';
-            
-            const visibleBooks = state.books.filter(book => 
+
+            const visibleBooks = state.books.filter(book =>
                 book.subBooks.some(sb => sb.pages.some(p => state.exposureLevel === 'full' || p.exposure === 'limited'))
             );
 
@@ -519,7 +519,7 @@
             grid.innerHTML = '';
             title.innerText = state.activeBook.name;
 
-            const visibleSubBooks = state.activeBook.subBooks.filter(sb => 
+            const visibleSubBooks = state.activeBook.subBooks.filter(sb =>
                 sb.pages.some(p => state.exposureLevel === 'full' || p.exposure === 'limited')
             );
 
@@ -542,7 +542,7 @@
             list.innerHTML = '';
             title.innerText = state.activeSubBook.name;
 
-            const visiblePages = state.activeSubBook.pages.filter(p => 
+            const visiblePages = state.activeSubBook.pages.filter(p =>
                 state.exposureLevel === 'full' || p.exposure === 'limited'
             );
 
@@ -550,7 +550,7 @@
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.style.textAlign = 'left';
-                
+
                 let contentHTML = '';
                 if (page.type === 'image') {
                     contentHTML = `<img src="${page.content}" style="width: 100%; border-radius: 15px; margin-top: 10px; box-shadow: 0 4px 10px var(--shadow-color);">`;
@@ -584,10 +584,10 @@
             const ctx = document.getElementById('page-context');
             const title = document.getElementById('single-page-title');
             const content = document.getElementById('single-page-content');
-            
+
             if (ctx) ctx.innerText = `From: ${rand.book.name} > ${rand.subBook.name}`;
             if (title) title.innerText = rand.page.title;
-            
+
             if (content) {
                 if (rand.page.type === 'image') {
                     content.innerHTML = `<img src="${rand.page.content}" style="width: 100%; border-radius: 15px; box-shadow: 0 4px 10px var(--shadow-color);">`;
@@ -664,7 +664,7 @@
                     if (!subBook) return;
                     subBook.pages.push({ id: Date.now(), type, title, content, exposure });
                 }
-                
+
                 resetPageForm();
                 saveData();
             };
@@ -694,7 +694,7 @@
             const book = state.books.find(b => b.id === bookId);
             const subBook = book ? book.subBooks.find(sb => sb.id === subBookId) : null;
             const page = subBook ? subBook.pages.find(p => p.id === pageId) : null;
-            
+
             if (!page) return;
             if (page.type === 'image') return alert("Only text pages can be edited for now.");
 
@@ -706,11 +706,11 @@
             document.getElementById('cancel-edit-btn').classList.remove('d-none');
             document.getElementById('admin-page-selectors').classList.add('d-none');
             document.getElementById('admin-type-container').classList.add('d-none');
-            
+
             document.getElementById('new-page-title').value = page.title;
             document.getElementById('new-page-content').value = page.content;
             document.querySelector(`input[name="exposure"][value="${page.exposure}"]`).checked = true;
-            
+
             // Focus
             document.getElementById('new-page-title').focus();
             document.getElementById('admin-page-section').scrollIntoView({ behavior: 'smooth' });
@@ -727,7 +727,7 @@
             document.getElementById('cancel-edit-btn').classList.add('d-none');
             document.getElementById('admin-page-selectors').classList.remove('d-none');
             document.getElementById('admin-type-container').classList.remove('d-none');
-            
+
             document.getElementById('new-page-title').value = '';
             document.getElementById('new-page-content').value = '';
             document.getElementById('new-page-image').value = '';
@@ -770,7 +770,7 @@
             const container = document.getElementById('admin-content-manager');
             if (!container) return;
             container.innerHTML = '';
-            
+
             state.books.forEach(b => {
                 const bDiv = document.createElement('div');
                 bDiv.className = 'admin-list-item';
@@ -793,7 +793,7 @@
                         const typeIcon = p.type === 'image' ? '📸' : '📄';
                         const editBtn = p.type === 'text' ? `<button class="edit-btn" onclick="editPage(${b.id}, ${sb.id}, ${p.id})">Edit</button>` : '';
                         pDiv.innerHTML = `
-                            <span>${typeIcon} ${p.title} (${p.exposure})</span> 
+                            <span>${typeIcon} ${p.title} (${p.exposure})</span>
                             <div>
                                 ${editBtn}
                                 <button class="delete-btn" onclick="deleteItem('page', ${p.id}, ${sb.id}, ${b.id})">Delete</button>
@@ -814,7 +814,7 @@
                 heart.setAttribute("viewBox", "0 0 32 32");
                 heart.classList.add('heart');
                 heart.innerHTML = `<path d="M16 28.5L14.1 26.6C7.3 20.4 3 16.5 3 11.5 3 7.4 6.2 4.2 10.3 4.2 12.6 4.2 14.8 5.3 16.2 7.1 17.6 5.3 19.8 4.2 22.1 4.2 26.2 4.2 29.4 7.4 29.4 11.5 29.4 16.5 25.1 20.4 18.3 26.6L16 28.5Z"/>`;
-                
+
                 const size = 15 + Math.random() * 20;
                 const duration = 4 + Math.random() * 5;
                 const delay = -Math.random() * 7;
